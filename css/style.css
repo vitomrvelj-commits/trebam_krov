@@ -1130,10 +1130,14 @@ body {
     gap:40px
   }
   .hero-image {
-    order:-1
+    order:-1;
+    width:100%;
+    max-width:100%
   }
   .hero-image-main {
-    height:300px
+    height:300px;
+    width:100%;
+    max-width:100%
   }
   .hero-image-card {
     bottom:-20px;
@@ -1187,6 +1191,20 @@ body {
     padding-bottom:50px
   }
 
+}
+
+/* Small mobile devices (iPhone 14 and below) */
+@media(max-width:400px) {
+  .container {
+    padding:0 16px
+  }
+  .hero-image-card {
+    max-width:calc(100% - 32px);
+    padding:16px 20px
+  }
+  .hero h1 {
+    font-size:clamp(36px,9vw,46px)
+  }
 }
 
 /* Headings - Clear Design Hierarchy */
