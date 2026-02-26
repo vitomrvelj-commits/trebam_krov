@@ -27,9 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Header scroll shadow
+    // Header scroll behavior - hide on scroll down, show on scroll up
+    let lastScroll = 0;
+    const header = document.querySelector('.header');
+
     window.addEventListener('scroll', () => {
-        document.querySelector('.header').style.boxShadow = window.pageYOffset > 50 ? '0 2px 20px rgba(0,0,0,0.1)' : 'none';
+        const currentScroll = window.pageYOffset;
+
+        // Add shadow when scrolled
+        header.style.boxShadow = currentScroll > 50 ? '0 2px 20px rgba(0,0,0,0.1)' : 'none';
+
+        // Hide/show header based on scroll direction
+        if (currentScroll <= 0) {
+            // At the top
+            header.classList.remove('header-hidden');
+        } else if (currentScroll > lastScroll && currentScroll > 100) {
+            // Scrolling down & past 100px
+            header.classList.add('header-hidden');
+        } else if (currentScroll < lastScroll) {
+            // Scrolling up
+            header.classList.remove('header-hidden');
+        }
+
+        lastScroll = currentScroll;
     });
 
     // Contact form
