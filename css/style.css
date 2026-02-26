@@ -1112,8 +1112,7 @@ body {
     display:none
   }
   .header-cta .btn {
-    padding:8px 16px;
-    font-size:13px
+    display:none
   }
   .mobile-menu-btn {
     display:block;
@@ -1189,8 +1188,8 @@ body {
     grid-template-columns:1fr
   }
   .page-hero {
-    padding-top:120px;
-    padding-bottom:60px
+    padding-top:140px;
+    padding-bottom:50px
   }
 
 }
