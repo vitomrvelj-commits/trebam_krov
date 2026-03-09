@@ -505,6 +505,15 @@ body {
   flex-shrink:0;
   margin-top:3px
 }
+.service-price {
+  font-size:14px;
+  color:var(--medium-gray);
+  margin-bottom:20px;
+}
+.service-price span {
+  font-weight:700;
+  color:var(--orange);
+}
 .service-link {
   display:inline-flex;
   align-items:center;
