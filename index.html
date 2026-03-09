@@ -222,12 +222,20 @@
                 <div class="contact-form-wrapper">
                     <h3 class="contact-form-title">Pošaljite upit</h3>
                     <p class="contact-form-subtitle">Javimo vam se u 24h.</p>
-                    <form class="contact-form" id="contact-form">
-                        <div class="form-row"><div class="form-group"><label class="form-label" for="name">Ime *</label><input type="text" id="name" name="name" class="form-input" required></div><div class="form-group"><label class="form-label" for="phone">Telefon *</label><input type="tel" id="phone" name="phone" class="form-input" required></div></div>
-                        <div class="form-row"><div class="form-group"><label class="form-label" for="email">Email *</label><input type="email" id="email" name="email" class="form-input" required></div><div class="form-group"><label class="form-label" for="location">Lokacija</label><input type="text" id="location" name="location" class="form-input" placeholder="npr. Zagreb, Trešnjevka"></div></div>
-                        <div class="form-group"><label class="form-label" for="message">Poruka *</label><textarea id="message" name="message" class="form-textarea" required></textarea></div>
+                    <form class="contact-form" id="contact-form" novalidate>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label" for="ime">Ime *</label><input type="text" id="ime" name="ime" class="form-input" placeholder="Vaše ime" required><span class="form-field-error" id="ime-error"></span></div>
+                            <div class="form-group"><label class="form-label" for="prezime">Prezime *</label><input type="text" id="prezime" name="prezime" class="form-input" placeholder="Vaše prezime" required><span class="form-field-error" id="prezime-error"></span></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label" for="email">Email *</label><input type="email" id="email" name="email" class="form-input" placeholder="vas@email.com" required><span class="form-field-error" id="email-error"></span></div>
+                            <div class="form-group"><label class="form-label" for="phone">Telefon *</label><input type="tel" id="phone" name="phone" class="form-input" placeholder="095 123 4567" required><span class="form-field-error" id="phone-error"></span></div>
+                        </div>
+                        <div class="form-group"><label class="form-label" for="location">Lokacija</label><input type="text" id="location" name="location" class="form-input" placeholder="npr. Zagreb, Trešnjevka"></div>
+                        <div class="form-group"><label class="form-label" for="message">Poruka *</label><textarea id="message" name="message" class="form-textarea" placeholder="Opišite problem ili što vam treba..." required></textarea><span class="form-field-error" id="message-error"></span></div>
                         <div id="form-status" class="form-status" aria-live="polite"></div>
-                        <button type="submit" class="btn btn-primary form-submit" id="form-submit">Pošalji</button>
+                        <button type="submit" class="btn btn-primary form-submit" id="form-submit">Pošalji upit</button>
+                        <p class="form-note">Odgovaramo u roku 24h radnim danom.</p>
                     </form>
                 </div>
             </div>
@@ -256,19 +264,58 @@
         const statusEl = document.getElementById('form-status');
         const submitBtn = document.getElementById('form-submit');
 
+        function setError(fieldId, msg) {
+          const err = document.getElementById(fieldId + '-error');
+          const input = document.getElementById(fieldId);
+          if (err) err.textContent = msg;
+          if (input) input.classList.add('form-input--error');
+        }
+
+        function clearErrors() {
+          form.querySelectorAll('.form-field-error').forEach(function(el) { el.textContent = ''; });
+          form.querySelectorAll('.form-input--error').forEach(function(el) { el.classList.remove('form-input--error'); });
+        }
+
+        function isValidEmail(email) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function validate(d) {
+          var ok = true;
+          if (!d.ime || d.ime.length < 2)        { setError('ime', 'Unesite ime (min. 2 znaka).'); ok = false; }
+          if (!d.prezime || d.prezime.length < 2) { setError('prezime', 'Unesite prezime (min. 2 znaka).'); ok = false; }
+          if (!d.email || !isValidEmail(d.email)) { setError('email', 'Unesite ispravnu email adresu.'); ok = false; }
+          if (!d.phone || d.phone.length < 6)     { setError('phone', 'Unesite ispravan broj telefona.'); ok = false; }
+          if (!d.message || d.message.length < 10) { setError('message', 'Poruka mora imati najmanje 10 znakova.'); ok = false; }
+          return ok;
+        }
+
         form.addEventListener('submit', async function (e) {
           e.preventDefault();
+          clearErrors();
           statusEl.textContent = '';
           statusEl.className = 'form-status';
+
+          var d = {
+            ime:      form.ime.value.trim(),
+            prezime:  form.prezime.value.trim(),
+            email:    form.email.value.trim(),
+            phone:    form.phone.value.trim(),
+            message:  form.message.value.trim(),
+            location: form.location.value.trim(),
+          };
+
+          if (!validate(d)) return;
+
           submitBtn.disabled = true;
           submitBtn.textContent = 'Šalje se...';
 
-          const payload = {
-            name: form.name.value.trim(),
-            email: form.email.value.trim(),
-            phone: form.phone.value.trim(),
-            propertyInterest: form.location.value.trim(),
-            message: form.message.value.trim(),
+          var payload = {
+            name: d.ime + ' ' + d.prezime,
+            email: d.email,
+            phone: d.phone,
+            propertyInterest: d.location,
+            message: d.message,
           };
 
           try {
@@ -292,7 +339,7 @@
             statusEl.className = 'form-status form-status--error';
           } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Pošalji';
+            submitBtn.textContent = 'Pošalji upit';
           }
         });
       })();
