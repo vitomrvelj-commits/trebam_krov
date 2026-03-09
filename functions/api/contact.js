@@ -1,11 +1,9 @@
 /**
  * Cloudflare Pages Function: POST /api/contact
- * Receives contact form payload and sends email via Resend.
+ * Receives contact form payload and sends email via Resend REST API.
  *
  * Required env (Settings > Variables and Secrets): RESEND_API_KEY, CONTACT_EMAIL
  */
-
-import { Resend } from 'resend';
 
 function htmlBody(data) {
   return `
@@ -13,11 +11,11 @@ function htmlBody(data) {
     <p><strong>Ime i prezime:</strong> ${escapeHtml(data.name)}</p>
     <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
     <p><strong>Telefon:</strong> ${escapeHtml(data.phone || '-')}</p>
-    <p><strong>Zanimljiv projekt:</strong> ${escapeHtml(data.propertyInterest || '-')}</p>
+    <p><strong>Lokacija:</strong> ${escapeHtml(data.propertyInterest || '-')}</p>
     <p><strong>Poruka:</strong></p>
     <p>${escapeHtml(data.message).replace(/\n/g, '<br>')}</p>
     <hr>
-    <p><em>Poslano s Family Homes Dugo Selo web stranice</em></p>
+    <p><em>Poslano s Krov Mont web stranice</em></p>
   `.trim();
 }
 
@@ -69,35 +67,38 @@ export async function onRequestPost(context) {
     return jsonResponse({ success: false, error: 'Poruka je obavezna (min. 10 znakova)' }, 400);
   }
 
-  const resend = new Resend(apiKey);
-
   try {
-    const { data: sendData, error } = await resend.emails.send({
-      from: 'Family Homes Dugo Selo <onboarding@resend.dev>',
-      to: [toEmail],
-      subject: `Kontakt forma: ${name} (${email})`,
-      html: htmlBody({
-        name,
-        email,
-        phone: data.phone?.trim(),
-        message,
-        propertyInterest: data.propertyInterest?.trim(),
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Krov Mont <onboarding@resend.dev>',
+        to: [toEmail],
+        subject: `Kontakt forma: ${name} (${email})`,
+        html: htmlBody({
+          name,
+          email,
+          phone: data.phone?.trim(),
+          message,
+          propertyInterest: data.propertyInterest?.trim(),
+        }),
       }),
     });
 
-    if (error) {
-      console.error('[contact] Resend error:', error);
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error('[contact] Resend error:', result);
       return jsonResponse(
-        {
-          success: false,
-          error: 'Failed to send email',
-          details: error.message || JSON.stringify(error),
-        },
+        { success: false, error: 'Failed to send email', details: result?.message },
         500,
       );
     }
 
-    return jsonResponse({ success: true, id: sendData?.id });
+    return jsonResponse({ success: true, id: result?.id });
   } catch (err) {
     console.error('[contact] Error:', err);
     return jsonResponse(
