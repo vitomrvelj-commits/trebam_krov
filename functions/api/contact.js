@@ -76,7 +76,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         from: 'Krov Mont <noreply@krovmont.hr>',
-        to: ['tsoldan.zg@gmail.com'],
+        to: ['infogradnja01@gmail.com'],
         subject: `Kontakt forma: ${name} (${email})`,
         html: htmlBody({
           name,
